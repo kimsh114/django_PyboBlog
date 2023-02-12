@@ -1,0 +1,172 @@
+<!--extends를 통해 base.html을 상속 받았으므로 이제 이 question_list.html은 표준 html구조를 갖추게 됨.-->
+<!--extends 'base.html'=> base.html을 상속받기 위한 템플릿 테그-->
+{% extends 'base.html' %}
+<!--load문은 extends문 다음에 위치해야 함// 앞에 위치하면 안됨.-->
+
+{% load pybo_filter %}
+{% block content %}
+<!--block content/ endblock => base.html의 바디 부분에 이 사이에 있는 것들을 집어 넣겠다는 의미이다.-->
+
+<!--container/my-3/thead-dark 등이 부트스트랩이 제공하고 있는 클래스이다.-->
+<!-- 부트스트랩에서 제공하는 것들을 이용해 웹 화면을 꾸미는 과정이다.-->
+<div class="container my-3">
+    <div class = 'row justify-content-between my3'> <!--'row justify-content-between  => 양쪽정렬이다.// between 대신에 end이면 오른쪽 정렬 -->
+<!--정렬 조건 추가-->
+        <div class = 'col-2'>
+            <select class = 'form-control so'>
+<!--class = 'form-control so'=> 현재 선택된 정렬 기준을 읽을 수 있도록 하기 위함.-->
+               <option value="recent" {% if so == 'recent' %}selected{% endif %}> 최신순 </option>
+                <option value="recommend" {% if so == 'recommend' %}selected{% endif %}>추천순</option>
+                <option value="popular" {% if so == 'popular' %}selected{% endif %}>답글이 많이 달린 순</option>
+            </select>
+        </div>
+
+        <div class = 'col-4 input-group'><input type="text" class = 'form-control kw' value="{{ kw|default_if_none:'' }}">
+<!--class = 'form-control kw' => input의 class에 kw를 추가시킨 이유는 js에서 검색 창에 입력된 값을 읽을 수 있도록 하기 위함.-->
+            <div class ='input-group-append'>
+                <button class = 'btn btn-outline-secondary' type = 'button' id = 'btn_search'>검색</button>
+            </div>
+        </div>
+    </div>
+    <table class="table">
+        <thead>
+        <tr class="text-center thead-dark">
+
+            <th>번호</th>
+            <th>추천</th>
+            <th style=" = 'width:50%">제목</th>
+            <th>글쓴이</th>
+            <th>작성일시</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% if question_list %} <!-- 렌더 함수에서 템플릿으로 전달한 Question 모델의 데이터이다.-->
+        {% for question in question_list %} <!--question_list를 반복하며 순차적으로 question에 대입하라-->
+        <tr class = 'text-center'> <!--text-center=> tr 엘리먼트에 text-center 클래스를 추가함.-->
+            <td>
+                <!-- 번호 = 전체건수 - 시작인덱스 - 현재인덱스 + 1 -->
+                {{ question_list.paginator.count|sub:question_list.start_index|sub:forloop.counter0|add:1 }}
+            </td>
+            <td>
+<!--질문 목록에 추천수를 표시해 주는 기능-->
+                {% if question.voter.all.count > 0 %}
+                <span class = 'badge badge-warning px-2 py-1'>  <!--부트스트랩의 badge 컴포넌트-->
+                    {{ question.voter.all.count }}
+                </span>
+                {% endif %}
+
+            </td>
+             <!--{{ forloop.counter }} => for문에서 반복 시에 자동으로 매겨지는 순섯값을 의미한다.// 질문의 일련번호를 표시함.// 여기서는 마이너스 필터를 적용하므로 사용x-->
+            <td class = 'text-left'> <!--제목을 왼쪽정렬-->
+
+                <a href="{% url 'pybo:detail' question.id %}">{{ question.subject }}</a>
+                {% if question.answer_set.count > 0 %}
+                <!--이 if문은 질문에 달린 답변의 개수를 표시해주는 것이다.-->
+
+                <span class="text-danger small ml-2">{{ question.answer_set.count }}</span>
+                {% endif %}
+            </td>
+            <td>{{ question.author.username }}</td> <!--글쓴이를 추가하는 과정이다.-->
+            <td>{{ question.create_date }}</td>
+        </tr>
+        {% endfor %}
+        {% else %}
+        <tr>
+            <td colspan="3">질문이 없습니다.</td>
+        </tr>
+        {% endif %}
+        </tbody>
+    </table>
+    <!-- 페이징처리 시작 -->
+    <ul class="pagination justify-content-center">
+         <!--pagination => 페이지를 보기 좋게 하기 위해 부트스트랩의 컴포넌트를 이용함.-->
+        <!-- 이전페이지// 만약 이번 페이지가 없으면 활성화 x  -->
+        {% if question_list.has_previous %}
+        <li class="page-item">
+            <a class="page-link" data-page = '{ question_list.previous_page_number }}' href="#">이전</a>
+<!--data-page => 검색기능이 들어감에 따라 기존의 페이징 처리 방식도 ?page=1에서 값을 읽어 오도록함. -->
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">이전</a>
+                        <!--question_list.previous_page_number => views.py의 page_obj.previous_page_number 와 동일하다.-->
+
+        </li>
+        {% endif %}
+        <!-- 페이지리스트 -->
+        {% for page_number in question_list.paginator.page_range %}
+        <!-- for page_number in question_list.paginator.page_range 부터 endfor 사이에는
+        페이지 리스트를 돌면서 해당 페이지로 이동할 수 있는 링크를 생성함.-->
+
+        {% if page_number >= question_list.number|add:-5 and page_number <= question_list.number|add:5 %}
+         <!--바로 위의 코드는 페이지 표시 제한 기능이다. 현재 페이지 기준 좌우로 2개씩 보이도록 함// |add:-2 => 2만큼 빼라, |add:2 2만큼 더해라-->
+<!--|add 필터는 더하기 필터인데 더하기 필터에는 변수를 적용할 수 없다. 오직 인수만 가능하다.-->
+            {% if page_number == question_list.number %}
+            <li class="page-item active" aria-current="page">
+                                <!--부트스트랩의 active를 이용해 강조함.-->
+
+                <a class="page-link" data-page = "{{ page_number }}" href="#">{{ page_number }}</a>
+            </li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" data-page = "{{ page_number }}" href="#">{{ page_number }}</a>
+            </li>
+            {% endif %}
+        {% endif %}
+        {% endfor %}
+        <!-- 다음페이지 -->
+        {% if question_list.has_next %}
+        <li class="page-item">
+            <a class="page-link" data-page = "{{ question_list.next_page_number }}" href="#">다음</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+            <a class="page-link" tabindex="-1" aria-disabled="true" href="#">다음</a>
+        </li>
+        {% endif %}
+    </ul>
+    <!-- 페이징처리 끝 -->
+    <a href="{% url 'pybo:question_create' %}" class="btn btn-primary">질문 등록하기</a>
+        <!--'pybo:question_create' => 질문 등록 url 추가=> 이걸 만든 다음 urls.py 파일에 url매핑을 추가 해야함.-->
+</div>
+
+<!--page와 검색의 kw를 동시에 GET 방식으로 요청할 수 있도록 form 엘리먼트 추가// searchForm-->
+<form id = 'searchForm' method = 'get' action = "{% url 'index' %}">   <!--action=> '폼이 전송되는 URL'임 //kw와 page의 값은 질문 목록 함수에서 전달받는다. -->
+<!-- method = 'get'=> get 방식으로 요청해야 하므로 메소드를 get을 줌.-->
+    <input type = 'hidden' id = 'kw' name = 'kw' value = "{{kw|default_if_none:''}}"> <!-- value => kw와 page는 이전에 요청했던 값을 기억해야 하므로 value에 대입 -->
+    <input type = 'hidden' id = 'page' name = 'page' value ="{{page}}">
+    <input type = 'hidden' id = 'so' name = 'so' value ="{{so}}">
+</form>
+{% endblock %}
+<!-- url "detail" question.id => url 별칭을 사용해 url을 정의-->
+<!--pybo:detail => 네임스페이스를 설정해줬으므로 파이보앱의 detail임을 정의-->
+
+
+
+
+<!-- 페이징과 검색/정열조건을 추가하는 js코드이다.// searchForm 요청이 발생하도록 하는 jquery js 코드-->
+{% block script %}
+<script type='text/javascript'>
+$(document).ready(function(){
+    $(".page-link").on('click', function() {
+        $("#page").val($(this).data("page"));
+        $("#searchForm").submit();
+    });
+    // 클래스의 속성이 "page-link"인 링크를 누르면 이 링크의 data-page 속성값을 읽어 searchForm의 page 필드에 그 값을 설정해 폼을 요청함.
+
+    $("#btn_search").on('click', function() {
+        $("#kw").val($(".kw").val());
+        $("#page").val(1);  // 검색버튼을 클릭할 경우 1페이지부터 조회한다.// 검색버튼을 누르는 경우는 새로운 검색 요청 사항이므로
+        $("#searchForm").submit();
+    });
+    // 검색버튼을 누르면 검색 창에 입력된 값을 searchForm의 kw 필드에 설정해 폼을 요청
+
+    $(".so").on('change', function() {
+        $("#so").val($(this).val());
+        $("#page").val(1);
+        $("#searchForm").submit();
+    });
+    // 클래스가 so인 엘리먼트, 즉 정렬 조건에 해당하는 select의 값이 변경되면 그 값을 searchForm의 so필드에 저장해 searchForm을 요청
+});
+</script>
+{% endblock %}

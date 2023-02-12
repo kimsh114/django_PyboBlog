@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h5 class="my-3 border-bottom pb-2">질문등록</h5>
+    <form method="post" class="post-form my-3">
+        {% csrf_token %}
+<!-- {{ form.as_p }} -->
+<!--여기서 form => pybo/views.py의 question_create함수에서 전달한 QuestionForm이다.-->
+<!--form.as_p => 모델 폼과 연결된 필드인 'subject', 'content'에 값을 입력할 수 있는 HTML코드를 자동으로 만들어 준다.-->
+<!--form.as_p => 이 태그는 부트스트랩을 적용할 수 없다는 단점이 있다. 그래서 이 템플릿에서는 form.as_p를 사용안하고 직접 html을 수정할 것이다.-->
+
+<!--오류 표시 시작// question_create 함수에서 form.is_valid()가 실패했을 때 오류를 표시하기 위함.-->
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+            {% for field in form %}
+                {% if field.errors %}
+                <strong>{{ field.label }}</strong>
+                {{ field.errors }}
+                {% endif %}
+            {% endfor %}
+            </div>
+        {% endif %}
+        <!-- 오류표시 End -->
+        <div class="form-group">
+            <label for="subject">제목</label>
+            <input type="text" class="form-control" name="subject" id="subject"
+                   value="{{ form.subject.value|default_if_none:'' }}">
+            <!--form.subject.value| default_if_none:'' => 오류 발생시에 기존의 입력값을 유지하기 위함이다.-->
+<!--default_if_none:'' => form.subject.value에 값이 없으면 공백으로 표시되도록 하기 위함.-->
+        </div>
+        <div class="form-group">
+            <label for="content">내용</label>
+            <textarea class="form-control" name="content"
+                      id="content" rows="10">{{ form.content.value|default_if_none:'' }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">저장하기</button>
+    </form>
+</div>
+{% endblock %}

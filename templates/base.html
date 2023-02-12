@@ -1,0 +1,39 @@
+{% load static %}
+<!--이 부분은 지금까지 만든 템플릿 html을 표준 html 구조로 바꾸기 위해
+모든 템플릿에서 공통으로 입력하기 위한 내용을 이 곳에 담아둘 용도로 만듦.-->
+<!--부트 스트랩을 사용하기 위한 static load-->
+<!doctype html>
+<html lang="ko">
+<head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'bootstrap.min.css' %}">
+    <!-- pybo CSS -->
+    <link rel="stylesheet" type="text/css" href="{% static 'style.css' %}">
+    <title>Hello, pybo!</title>
+</head>
+<body>
+<!--부트스트랩은 반응형 웹까지 적용이 되어있다.-->
+<!--include를 이용한 네비게이션바 추가/ 로고와 로그인 추가 기능-->
+{% include "navbar.html" %}
+<!--'navbar.html에서 만든 네비게이션바를 base.html에 포함시키는 영역'-->
+<!--include 기능은 템플릿의 특정 영역을 중복/반복해서 사용할 경우 유용함.-->
+
+<!-- 기본 템플릿 안에 삽입될 내용 Start// 이 부분이 base.html 템플릿 파일을 상속한 파일에서 구현해야 하는 영역이다. -->
+{% block content %}
+{% endblock %}
+<!-- 기본 템플릿 안에 삽입될 내용 End -->
+<!-- jQuery JS -->
+<script src="{% static 'jquery-3.4.1.min.js' %}"></script>
+<!-- Bootstrap JS -->
+<script src="{% static 'bootstrap.min.js' %}"></script>
+<!--js start-->
+<!--모든 템플릿에서 jquery라이브러리를 사용하기 위함.-->
+<!-- 이런 식으로 하면 base.html을 상속 받는 템플릿들이 이 블록을 구현해 제이쿼리를 사용한 쿼리를 작성할 수 있다.-->
+{% block script %}
+{% endblock %}
+<!--js end-->
+</body>
+</html>

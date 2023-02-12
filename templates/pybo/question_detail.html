@@ -1,0 +1,205 @@
+{% extends 'base.html' %}
+{% load pybo_filter %} <!--마크다운 사용을 위함.-->
+{% block content %}
+<div class="container my-3">
+    <!-- 사용자오류 표시// 자신의 글 추천 시 오류가 나게끔 하기 위함. -->
+    {% if messages %}
+    <div class="alert alert-danger my-3" role="alert"> <!-- my-3 => 상하 마진이 3이라는 의미이다. -->
+    {% for message in messages %}
+        <strong>{{ message.tags }}</strong>
+        <ul><li>{{ message.message }}</li></ul>
+    {% endfor %}
+    </div>
+    {% endif %}
+<!--사용자 오류 표시 끝-->
+    <h2 class="border-bottom py-2">{{ question.subject }}</h2> <!-- 질문 제목// py-2 => 상하 패딩값 2-->
+    <div class="row my-3">
+        <div class="col-1"> <!-- 추천영역//col-1 추천영역의 너비는 전체 너비의 1/12 -->
+            <div class="bg-light text-center p-3 border font-weight-bolder mb-1">{{question.voter.count}}</div>
+            <a href="#" data-uri="{% url 'pybo:vote_question' question.id  %}"
+               class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
+             <!--"recommend btn btn-sm btn-secondary btn-block my-1 => 추천 버튼을 누르는 이벤트를 얻기 위한 클래스 이다.-->
+        </div>
+        <div class="col-11"> <!-- 질문영역//col-11 질문영역의 너비는 전체 너비의 11/12 -->
+            <div class="card">
+                <div class="card-body">
+                    <!-- 질문 내용// question.content | mark => 마크다운 기능을 question의 내용에 적용하기 위함 -->
+                    <div class="card-text" >{{ question.content |mark}}</div>
+                    <div class="d-flex justify-content-end">
+                        {% if question.modify_date %}     <!--질문 수정 일시-->
+                        <div class="badge badge-light p-2 text-left mx-3">  <!-- p-2 => 상하좌우 패딩값이 2라는 의미이다. -->
+                            <div class="mb-2">modified at</div>
+                            <div>{{ question.modify_date }}</div>
+                        </div>
+                        {% endif %}
+                        <div class="badge badge-light p-2 text-left">
+                            <div class="mb-2">{{ question.author.username }}</div>  <!--질문 작성자 표시-->
+                            <div>{{ question.create_date }}</div>
+                        </div>
+                    </div>
+                    {% if request.user == question.author %}
+                    <div class="my-3">
+                        <a href="{% url 'pybo:question_modify' question.id  %}"
+                           class="btn btn-sm btn-outline-secondary">수정</a>
+                        <a href="#" class="delete btn btn-sm btn-outline-secondary"
+                           data-uri="{% url 'pybo:question_delete' question.id  %}">삭제</a>
+                         <!--data-uri : 제이쿼리에서 $(this).data('uri')와 같이 사용해 그 값을 얻을 수 있다.// 삭제를 실행할 URL을 얻기 위해 사용했다.-->
+                    </div>
+                    {% endif %}
+                    <!-- 질문 댓글 Start -->
+                    {% if question.comment_set.count > 0 %}
+                    <div class="mt-3">
+                    {% for comment in question.comment_set.all %}
+                        <!--질문에 등록된 댓글을 보여주도록 댓글의 내용과 글쓴이, 작성일시를 출력함.-->
+                        <a name = 'comment_{{comment.id}}'></a>
+                        <div class="comment py-2 text-muted">
+            <!--class 값으로 comment를 지정했는데 이 클래스는 댓글을 작게 보여주는 클래스로 별도의 CSS 작업을 해야 한다.// static/stayle.css 파일에 작성함.-->
+
+                            <span style="white-space: pre-line;">{{ comment.content }}</span>
+                            <span>
+                                - {{ comment.author }}, {{ comment.create_date }}
+                                {% if comment.modify_date %}
+                                (수정:{{ comment.modify_date }})
+                                {% endif %}
+                            </span>
+                            {% if request.user == comment.author %}
+                            <a href="{% url 'pybo:comment_modify_question' comment.id  %}" class="small">수정</a>,
+                            <a href="#" class="small delete"
+                               data-uri="{% url 'pybo:comment_delete_question' comment.id  %}">삭제</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                    </div>
+                    {% endif %}
+                    <div>
+                        <a href="{% url 'pybo:comment_create_question' question.id  %}"
+                           class="small"><small>댓글 추가 ..</small></a>
+                    </div>
+                    <!-- 질문 댓글 End -->
+                </div>
+            </div>
+        </div>
+    </div>
+    <h5 class="border-bottom my-3 py-2">{{question.answer_set.count}}개의 답변이 있습니다.</h5> <!-- 이 질문에 대한 답변 갯수-->
+    {% for answer in question.answer_set.all %} <!--답변이 반복되는 테그-->
+    <!--a테그 안에 name ='answer_{{answer.id}}' 라고 적어두면  해당 Html을 호출하는 URL 뒤에 #'answer_{{answer.id}}' 라고 적어 두면 이 부분으로 스크롤이 이동함.-->
+    <a name = 'answer_{{answer.id}}'></a>  <!-- 스크롤 초기화가 안되게 하기 위함.// 앵커 테그의 name 속성은 유일해야 하므로 answer.id를 사용 -->
+<!-- 이렇게 앵커 테그의 name을 지정하고 해당 views에 가서 redirect를 수정한다. -->
+    <div class="row my-3">
+        <div class="col-1">  <!-- 답변 추천영역 -->
+            <div class="bg-light text-center p-3 border font-weight-bolder mb-1">{{answer.voter.count}}</div>
+            <a href="#" data-uri="{% url 'pybo:vote_answer' answer.id  %}"
+                class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
+        </div>
+        <div class="col-11">  <!-- 답변영역 -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-text" >{{ answer.content| mark }}</div> <!-- 답변 내용 -->
+                    <div class="d-flex justify-content-end">
+                        {% if answer.modify_date %}
+                        <div class="badge badge-light p-2 text-left mx-3">
+                            <div class="mb-2">modified at</div>
+                            <div>{{ answer.modify_date }}</div>  <!-- 답변 수정일자. -->
+                        </div>
+                        {% endif %}
+                        <div class="badge badge-light p-2 text-left">
+                            <div class="mb-2">{{ answer.author.username }}</div>
+                            <div>{{ answer.create_date }}</div>  <!-- 답변 작성일자. -->
+                        </div>
+                    </div>
+                    {% if request.user == answer.author %}
+                    <div class="my-3">
+                        <a href="{% url 'pybo:answer_modify' answer.id  %}"
+                           class="btn btn-sm btn-outline-secondary">수정</a>
+                        <a href="#" class="delete btn btn-sm btn-outline-secondary "
+                           data-uri="{% url 'pybo:answer_delete' answer.id  %}">삭제</a>
+                    </div>
+                    {% endif %}
+                    <!--답변 댓글 시작-->
+                    {% if answer.comment_set.count > 0 %}
+                    <div class="mt-3">
+                    {% for comment in answer.comment_set.all %}
+                        <a name = 'comment_{{comment.id}}'></a>
+                        <div class="comment py-2 text-muted">
+                            <span style="white-space: pre-line;">{{ comment.content }}</span>
+                            <span>
+                                - {{ comment.author }}, {{ comment.create_date }}
+                                {% if comment.modify_date %}
+                                (수정:{{ comment.modify_date }})
+                                {% endif %}
+                            </span>
+                            {% if request.user == comment.author %}
+                            <a href="{% url 'pybo:comment_modify_answer' comment.id  %}" class="small">수정</a>,
+                            <a href="#" class="small delete"
+                               data-uri="{% url 'pybo:comment_delete_answer' comment.id  %}">삭제</a>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+
+                    </div>
+                    {% endif %}
+                    <div>
+                        <a href="{% url 'pybo:comment_create_answer' answer.id  %}"
+                           class="small"><small>댓글 추가 ..</small></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 답변 댓글 끝-->
+    </div>
+    {% endfor %}
+    <form action="{% url 'pybo:answer_create' question.id %}" method="post" class="my-3">
+        <!--답변등록을 누를 때 호출이 되는 url은 action 속성에 있는 {% url "pybo:answer_create" question.id %}이다.-->
+        {% csrf_token %}
+        <!--{% csrf_token %}=> 이것은 form 엘리먼트를 통해 전송된 데이터가 실제로 웹 브라우저에서 작성된 데이터인지 판단하는 검사기이다. (보안 관련항목)-->
+
+        <!--오류 표시 영역 추가-->
+        {% if form.errors %}
+        <div class="alert alert-danger" role="alert">
+        {% for field in form %}
+            {% if field.errors %}
+            <strong>{{ field.label }}</strong>
+            {{ field.errors }}
+            {% endif %}
+        {% endfor %}
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <textarea {% if not user.is_authenticated %}disabled{% endif %}
+              name="content" id="content" class="form-control" rows="10"></textarea>
+            <!--{% if not user.is_authenticated %}disabled{% endif %} => 로그인 상태가 아닌 경우 답변등록창을 적을 수 없도록 만듦-->
+        </div>
+        <input type="submit" value="답변등록" class="btn btn-primary">
+         <!--답변 등록은 질문 상세화면에 입력창을 추가해 만든 것이므로 답변 수정 및 삭제를 위해 답변 수정 템플릿이 따로 필요함.-->
+    </form>
+</div>
+{% endblock %}
+
+<!--삭제 및 추천버튼을 구현하기 위해 jquery 스크립트를 사용-->
+
+{% block script %}
+<script type='text/javascript'>
+$(document).ready(function(){
+
+    $(".delete").on('click', function() {
+        if(confirm("정말로 삭제하시겠습니까?")) {
+            location.href = $(this).data('uri');
+        }
+    });
+    $(".recommend").on('click', function() {
+        if(confirm("정말로 추천하시겠습니까?")) {
+            location.href = $(this).data('uri');
+        }
+    });
+});
+</script>
+<!--$(".recommend")=> 추천 버튼에 class ='recommend'가 적용되어 있으므로 해당 엘리먼트를 찾아 주는 제이쿼리 코드를 사용함.-->
+<!--location.href = $(this).data('uri'); => 확인 창에서 확인을 누르면 data-uri 속성에서 정의한 url이 호출이 되도록 함.-->
+{% endblock %}
+
+
+
+
+
+
+

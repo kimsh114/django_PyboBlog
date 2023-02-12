@@ -1,0 +1,14 @@
+@echo off
+cd c:/프로젝트 폴더/프로젝트 폴더의 파일이름
+c:/가상환경 폴더/가상환경 이름/scripts/activate
+
+ex.) 
+@echo off
+cd c:/projects/mysite
+c:/venvs/mysite/scripts/activate
+
+
+위 문구를 메모장에 입력하고, 저장할 때는 .cmd로 저장하기
+그 다음 윈도우 + r 키를 눌러 sysdm.cpl 입력 -> 시스템 속성의 고급 -> 환경변수에서 편집을 눌러서 가상환경이 있는 폴더를 새로만들기-> 이러면 이제 프로젝트 폴더의 파일이름을 cmd에 입력하면
+가상환경이 실행됨.
+

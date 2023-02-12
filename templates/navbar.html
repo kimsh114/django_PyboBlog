@@ -1,0 +1,24 @@
+<!--네비게이션바를 만들어 base.html과 연동-->
+<nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+    <a class="navbar-brand" href="{% url 'pybo:index' %}">Pybo</a>
+    <button class="navbar-toggler ml-auto" type="button" data-toggle="collapse" data-target="#navbarNav"
+        aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse flex-grow-0" id="navbarNav">
+        <ul class="navbar-nav">
+            <li class="nav-item ">
+                {% if user.is_authenticated %}
+                <!--if user.is_authenticated => 현재 로그인 상태를 판별하여 로그인 상태라면 로그아웃 링크를, 로그아웃 상태라면
+                    로그인 링크를 보여주는 코드-->
+                <a class="nav-link" href="{% url 'common:logout' %}">{{ user.username }} (로그아웃)</a>
+                                    <!--로그아웃 기능을 구현하기 위함.// 로그아웃 이 뜬 것은 로그인을 했다는 말이므로 사용자의 이름도 옆에 뜨도록함.-->
+
+                {% else %}
+                <a class="nav-link" href="{% url 'common:login' %}">로그인</a>
+                                    <!--url 'common:login' => common 앱의 로그인 링크 추가=> common에 있는 urls.py에 url매핑을 추가해야 함.-->
+                {% endif %}
+            </li>
+        </ul>
+    </div>
+</nav>

@@ -1,0 +1,5 @@
+# .idea와 db.sqlite3는 깃으로 관리하지 않겠다는 의미이다.
+.idea
+db.sqlite3
+*.pyc
+__pycache__
