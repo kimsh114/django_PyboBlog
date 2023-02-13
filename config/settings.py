@@ -13,8 +13,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent.parent #.parent 를 하나 더 붙이는 이유는 기존의 settings.py는 mysite/config였는데
-#이제는 mysite/config/settings까지 왔기 때문
+BASE_DIR = Path(__file__).resolve().parent.parent
 
 
 # Quick-start development settings - unsuitable for production
