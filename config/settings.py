@@ -13,7 +13,8 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = Path(__file__).resolve().parent.parent.parent #.parent 를 하나 더 붙이는 이유는 기존의 settings.py는 mysite/config였는데
+#이제는 mysite/config/settings까지 왔기 때문
 
 
 # Quick-start development settings - unsuitable for production
@@ -26,6 +27,7 @@ SECRET_KEY = 'ls&1oied3t*np!^y6664m!j2-l%ie=8g$w-bjk_pjryzd#3y6b'
 DEBUG = True  # 이 디버그 항목은 개발자에게 여러 정보를 알려 주는 오류 화면이다. 실제 서비스에서는 False로 설정하자.
 
 ALLOWED_HOSTS = ['15.165.87.71'] # 파이보 서비스를 배포하기 위해 내가 aws lightsail로 만든 나의 개인 주소를 여기 적어줌
+# 고정 아이피를 추가하면 개발 서버로 접속할 시에 오류가 뜸. => 개발 환경과 서버 환경을 구분해줘야함.
 
 
 # Application definition
