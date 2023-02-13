@@ -25,7 +25,7 @@ SECRET_KEY = 'ls&1oied3t*np!^y6664m!j2-l%ie=8g$w-bjk_pjryzd#3y6b'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True  # 이 디버그 항목은 개발자에게 여러 정보를 알려 주는 오류 화면이다. 실제 서비스에서는 False로 설정하자.
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['15.165.87.71'] # 파이보 서비스를 배포하기 위해 내가 aws lightsail로 만든 나의 개인 주소를 여기 적어줌
 
 
 # Application definition
